@@ -4,7 +4,7 @@ $(function() {
 	printBTLog(" - This App uses the chrome.bluetoothSocket APIs");
 	printBTLog(" - To connect devices, they MUST be paired AFTER opening this app.");
 	printBTLog(" - At LEAST Chrome 37 is required for this application");
-	
+
 	var opts = {
 	  lines: 6,
 	  angle: 0.15,
@@ -14,7 +14,7 @@ $(function() {
 		strokeWidth: 0.035,
 		color: '#000000'
 	  },
-	  limitMax: 'false', 
+	  limitMax: 'false',
 	  percentColors: [[0.0, "#DF0101" ], [0.50, "#FFFF00"], [1.0, "#01DF01"]], // !!!!
 	  strokeColor: '#E0E0E0',
 	  generateGradient: true
@@ -37,11 +37,11 @@ $(function() {
 
 
 	var hotkeys = [81,65,87,83,69,68];
-	
+
 	var motor1 = "s";
 	var motor2 = "s";
 	var motor3 = "s";
-	
+
 	function keyPress(code,state){
 		switch(code){
 		case 81:
@@ -54,8 +54,8 @@ $(function() {
 		if(motor1!=="b" & state == 1){var rev = (document.getElementById("motor1Reversed").checked) ? 1 : -1;sendMotorCommand(0,-100*rev);motor1="b";printBTLog("Motor 1 BACK");gauge11.set(0);};
 		if(motor1!=="s" & state == 0){sendMotorCommand(0,0);motor1="s";printBTLog("Motor 1 STOP");gauge11.set(100);};
 		break;
-		
-		
+
+
 		case 87:
 		// w
 		if(motor2!=="f" & state == 1){var rev = (document.getElementById("motor2Reversed").checked) ? 1 : -1;sendMotorCommand(1,100*rev);motor2="f";printBTLog("Motor 2 FORWARD");gauge22.set(200);};
@@ -66,8 +66,8 @@ $(function() {
 		if(motor2!=="b" & state == 1){var rev = (document.getElementById("motor2Reversed").checked) ? 1 : -1;sendMotorCommand(1,-100*rev);motor2="b";printBTLog("Motor 2 BACK");gauge22.set(0);};
 		if(motor2!=="s" & state == 0){sendMotorCommand(1,0);motor2="s";printBTLog("Motor 2 STOP");gauge22.set(100);};
 		break;
-		
-		
+
+
 		case 69:
 		// e
 		if(motor3!=="f" & state == 1){var rev = (document.getElementById("motor3Reversed").checked) ? 1 : -1;sendMotorCommand(2,100*rev);motor3="f";printBTLog("Motor 3 FORWARD");gauge33.set(200);};
@@ -109,21 +109,21 @@ $(function() {
 
 	  return result;
 	}
-	
+
 	function MonitorKeyDown(e)
 	{
 	  if (!e) e=window.event;
 	  var d = GetDescriptionFor(e,1);
 	  return false;
 	}
-	
+
 	function MonitorKeyUp(e)
 	{
 	  if (!e) e=window.event;
 	  var d = GetDescriptionFor(e,0);
 	  return false;
 	}
-	
+
 	document.addEventListener('keydown', MonitorKeyDown, false)
 	document.addEventListener('keyup', MonitorKeyUp, false)
 
@@ -131,7 +131,7 @@ $(function() {
 
 
 	var socketID         = 0;
-	
+
 	var deviceArray      = {};
 	var device_names     = {};
 	var device_Addresses = {};
@@ -141,13 +141,13 @@ $(function() {
 	var screenWidth = screen.availWidth;
 	var screenHeight = screen.availHeight;
 
-//  Start up Code	
+//  Start up Code
 
 	var addDeviceName = function(device) {
 		deviceArray[deviceCount++] = device;
 //                var btDeviceName = device.name;
 //                $('<option></option>').text(btDeviceName).appendTo(btDeviceSelect);
-        $('<option></option>').text(device.name).appendTo(btDeviceSelect);
+        $('<option></option>').text(device.name + " - " + device.address).appendTo(btDeviceSelect);
 	}
 	var updateDeviceName = function(device) {
 		printBTLog('  Have a device update - ' + device.name);
@@ -163,7 +163,7 @@ $(function() {
 	chrome.bluetooth.onDeviceAdded.addListener(addDeviceName);
 	chrome.bluetooth.onDeviceChanged.addListener(updateDeviceName);
 	chrome.bluetooth.onDeviceRemoved.addListener(removeDeviceName);
-	
+
     // Get the list of paired devices.
 //	printBTLog("");
 //	chrome.bluetooth.getDevices(function(devices) {
@@ -183,14 +183,14 @@ $(function() {
             $('#selectedBTDevice').empty().text(btDeviceSelect.val());
         }, 30000);
     });
-	
 
-	
-//  Functions	
+
+
+//  Functions
 	function convertArrayBufferToString (buf) {
 		return String.fromCharCode.apply(null, new Uint8Array(buf));
 	}
-	
+
 
 	function convertArrayBufferToDumpString (buf) {
 		var dumpString = '['
@@ -227,9 +227,9 @@ $(function() {
 	function printConnectionBTLog(id, msg) {
 		printBTLog('(' + id + ') ' + msg);
 	}
-	
+
 	function sendMotorCommand(motor,speed){
-	
+
 		if (socketID) {
 			var cmd=[0x0c, 0x00, 0x80, 0x04, motor, speed, 0x07, 0x01, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00];
 			//var txdata = cmd;
@@ -240,7 +240,7 @@ $(function() {
 			chrome.bluetoothSocket.send(socketID, txbuffer, function (bytes_sent) {
 				if (chrome.runtime.lastError) {
 					printBTLog("send Operation failed: " + chrome.runtime.lastError.message);
-				} 
+				}
 				else {
 					printBTLog('Sent ' + bytes_sent + ' bytes');
 				}
@@ -248,14 +248,36 @@ $(function() {
 		}
 		else {
 			printBTLog('Not connected. aaa');
-		}	
+		}
 	}
-			
+
 
 	$('#btDeviceSelect')
 		.change(function () {
 			$('#selectedBTDevice').empty().text($('#btDeviceSelect').val());
 		});
+
+	$('#btRefresh')
+	  .click(function() {
+	    $('#btDeviceSelect').empty();
+	    deviceArray      = {};
+    	device_names     = {};
+    	device_Addresses = {};
+    	deviceCount      = 0;
+    	deviceOffset     = 0;
+
+    	printBTLog("");
+    	chrome.bluetooth.getDevices(function(devices) {
+    		for (var i = 0; i < devices.length; i++) {
+    		    printBTLog('Found: ' + devices[i].name);
+    		    deviceArray[deviceCount++] = devices[i];
+    			$('<option></option>').text(devices[i].name + " - " + devices[i].address).appendTo(btDeviceSelect);
+    		    updateDeviceName(devices[i]);
+    		}
+      });
+
+
+	  })
 
 	$('#btConnect')
 		.click(function () {
@@ -283,7 +305,7 @@ $(function() {
 				if (chrome.runtime.lastError) {
 				    AddConnectedSocketId(socketID = 0);
 					printBTLog("Connection Operation failed: " + chrome.runtime.lastError.message);
-				} 
+				}
 			}
 			else {
 				printBTLog('Already connected.');
@@ -355,7 +377,7 @@ $(function() {
 			}
 			if (chrome.runtime.lastError) {
 				printBTLog("getDevice Operation failed: " + chrome.runtime.lastError.message);
-			} 
+			}
 		});
 
 	$('#btSendMessage')
@@ -369,7 +391,7 @@ $(function() {
 				chrome.bluetoothSocket.send(socketID, txbuffer, function (bytes_sent) {
 				    if (chrome.runtime.lastError) {
 					    printBTLog("send Operation failed: " + chrome.runtime.lastError.message);
-				    } 
+				    }
 					else {
 						printBTLog('Sent ' + bytes_sent + ' bytes');
 					}
@@ -377,35 +399,35 @@ $(function() {
 			}
 			else {
 				printBTLog('Not connected.');
-			}			
+			}
 		});
-		
+
 	//$('#btSendMotor1on')
-	//	.click(function(){		
+	//	.click(function(){
 	//		sendMotorCommand(0,100);
 	//});
 	$('#btSendMotor1off')
-		.click(function(){		
+		.click(function(){
 			sendMotorCommand(0,0);
 	});
 	//$('#btSendMotor2on')
-	//	.click(function(){		
+	//	.click(function(){
 	//		sendMotorCommand(1,100);
 	//});
 	$('#btSendMotor2off')
-		.click(function(){		
+		.click(function(){
 			sendMotorCommand(1,0);
 	});
 	//$('#btSendMotor3on')
-	//	.click(function(){		
+	//	.click(function(){
 	//		sendMotorCommand(2,100);
 	//});
 	$('#btSendMotor3off')
-		.click(function(){		
+		.click(function(){
 			sendMotorCommand(2,0);
 	});
 
-		
+
 	var rxbuilder = '';
 	function onBTReceive(info) {
 		printBTLog('Received ' + info.data.byteLength + ' bytes of data: ' + convertArrayBufferToDumpString(info.data));

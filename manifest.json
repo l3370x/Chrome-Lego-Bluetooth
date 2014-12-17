@@ -1,13 +1,17 @@
 {
   "manifest_version": 2,
-  "name": "Chrome BT App",
-  "version": "0.2",
+  "name": "NXT Bluetooth Controller",
+  "version": "0.4",
   "minimum_chrome_version": "37",
   "app": {
     "background": {
       "scripts": ["background.js"]
     }
   },
+  "icons":{ "128":"assets/nxtlogo128.jpg",
+            "48": "assets/nxtlogo48.png"
+  }
+  ,
   "bluetooth":{
     "socket": true,
     "uuids":

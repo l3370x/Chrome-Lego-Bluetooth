@@ -29,7 +29,7 @@ body {
 #btController{
 	width:40%;
 	margin-left:4.5%;
-	
+
 	float:left;
 }
 
@@ -45,10 +45,15 @@ padding-left: 8%;
 	font-size:14px;
 }
 
+.form-control {
+  display:inline;
+  width:80%;
+}
+
 .log-content {
   border: 0;
   margin: 0;
   padding: 0;
   -webkit-user-select: text;
-  
+
 }
